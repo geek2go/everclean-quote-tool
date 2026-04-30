@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EverClean Quote Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500;700&display=swap">
+<style>
+  /* =====================================================================
+     TOKENS — EverClean brand colors + fonts (CLAUDE.md), Apple patterns (DESIGN.md)
+     ===================================================================== */
+  :root {
+    /* EverClean brand */
+    --ec-blue: #00559C;
+    --ec-blue-dark: #003F75;
+    --ec-blue-tint: rgba(0, 85, 156, 0.08);
+    --ec-green: #68B578;
+    --ec-green-dark: #28764A;
+    --ec-dark-gray: #3A3A3A;
+
+    /* Surface (Apple-pattern light/parchment alternation, EC tones) */
+    --canvas: #ffffff;
+    --canvas-parchment: #F8F9FA;     /* EC off-white */
+    --ink: #1d1d1f;
+    --ink-muted-80: #3A3A3A;          /* EC dark gray */
+    --ink-muted-48: #6e6e73;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --hairline-strong: rgba(0, 0, 0, 0.14);
+
+    /* Coach hint + error */
+    --coach-bg: #FFF8E1;
+    --coach-text: #6B5A23;
+    --error: #B3261E;
+    --error-bg: #FDECEA;
+
+    /* Typography */
+    --font-heading: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-body: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    /* Spacing (Apple 8px-base scale) */
+    --sp-xxs: 4px;
+    --sp-xs: 8px;
+    --sp-sm: 12px;
+    --sp-md: 17px;
+    --sp-lg: 24px;
+    --sp-xl: 32px;
+    --sp-xxl: 48px;
+
+    /* Radii */
+    --r-sm: 8px;
+    --r-md: 11px;
+    --r-lg: 18px;
+    --r-pill: 9999px;
+  }
+
+  /* =====================================================================
+     RESET + BASE
+     ===================================================================== */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    background: var(--canvas-parchment);
+    color: var(--ink);
+    /* Apple-pattern: 17px body, -0.374 letter-spacing, 1.47 line-height */
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.47;
+    letter-spacing: -0.224px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* =====================================================================
+     LAYOUT
+     ===================================================================== */
+  .wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--sp-sm);
+    padding-bottom: 96px;
+  }
+  @media (min-width: 736px) {
+    .wrap {
+      max-width: 760px;
+      padding: var(--sp-lg);
+    }
+  }
+  @media (min-width: 1024px) {
+    .wrap {
+      max-width: 840px;
+    }
+  }
+
+  /* =====================================================================
+     TYPOGRAPHY
+     ===================================================================== */
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--ink);
+    margin: 0;
+  }
+
+  /* =====================================================================
+     HEADER
+     ===================================================================== */
+  header.title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ec-blue);
+    color: #fff;
+    padding: var(--sp-md) var(--sp-lg);
+    border-radius: var(--r-lg);
+    margin-bottom: var(--sp-md);
+  }
+  header.title-bar h1 {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+  }
+
+  /* =====================================================================
+     BUTTONS
+     ===================================================================== */
+  button {
+    font: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+
+  /* Primary pill — Apple grammar, EC brand color */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ec-green);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.224px;
+    border-radius: var(--r-pill);
+    padding: 14px 28px;
+    min-height: 48px;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .btn-primary:hover { background: var(--ec-green-dark); }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:focus-visible {
+    outline: 2px solid var(--ec-green-dark);
+    outline-offset: 2px;
+  }
+
+  /* Secondary pill — ghost style, EC blue */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    color: var(--ec-blue);
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.224px;
+    border: 1px solid var(--ec-blue);
+    border-radius: var(--r-pill);
+    padding: 13px 28px;
+    min-height: 48px;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .btn-secondary:hover { background: var(--ec-blue-tint); }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  /* Compact dark utility — Apple grammar, EC dark-gray fill */
+  .btn-utility {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: -0.224px;
+    border-radius: var(--r-sm);
+    padding: 8px 14px;
+    min-height: 36px;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .btn-utility:hover { background: rgba(255, 255, 255, 0.28); }
+  .btn-utility:active { transform: scale(0.97); }
+
+  .btn-block {
+    display: flex;
+    width: 100%;
+  }
+
+  /* =====================================================================
+     CALL-OUT BLOCKS (closing script, confidence reminder, error)
+     ===================================================================== */
+  .closing-script,
+  .confidence,
+  .error-box {
+    border-radius: var(--r-lg);
+    padding: var(--sp-md) var(--sp-lg);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: var(--sp-md);
+  }
+  .closing-script {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--ec-blue);
+  }
+  .closing-script strong { color: var(--ec-blue-dark); font-weight: 700; }
+
+  .confidence {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--ec-green);
+    margin: var(--sp-md) 0;
+  }
+  .confidence strong { color: var(--ec-green-dark); font-weight: 700; }
+  .confidence ul { margin: var(--sp-xs) 0 0; padding-left: 22px; }
+  .confidence li { margin-bottom: var(--sp-xxs); }
+
+  .error-box {
+    background: var(--error-bg);
+    border: 1px solid var(--error);
+    color: var(--error);
+    font-weight: 600;
+    display: none;
+  }
+  .error-box.show { display: block; }
+
+  /* =====================================================================
+     SECTION CARDS
+     ===================================================================== */
+  section.field-group {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-lg);
+    margin-bottom: var(--sp-md);
+    overflow: hidden;
+  }
+  section.field-group > h2 {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.374px;
+    line-height: 1.24;
+    color: var(--ec-blue-dark);
+    padding: var(--sp-md) var(--sp-lg) var(--sp-xs);
+    border-bottom: 1px solid var(--hairline);
+    background: var(--canvas-parchment);
+  }
+  @media (min-width: 736px) {
+    section.field-group > h2 {
+      font-size: 19px;
+    }
+  }
+  section.field-group .body {
+    padding: var(--sp-md) var(--sp-lg) var(--sp-md);
+  }
+
+  /* =====================================================================
+     COACH HINTS
+     ===================================================================== */
+  .coach {
+    background: var(--coach-bg);
+    color: var(--coach-text);
+    border-radius: var(--r-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    /* Apple caption: 14px / 400 / -0.224px */
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.43;
+    letter-spacing: -0.224px;
+    margin: 0 0 var(--sp-sm);
+  }
+  .coach strong { font-weight: 700; font-style: normal; }
+
+  /* =====================================================================
+     FORM FIELDS
+     ===================================================================== */
+  label.field {
+    display: block;
+    margin-bottom: var(--sp-sm);
+  }
+  label.field > span.lbl {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.224px;
+    color: var(--ink);
+    margin-bottom: var(--sp-xxs);
+  }
+  label.field > span.lbl .opt {
+    font-weight: 400;
+    color: var(--ink-muted-48);
+    font-family: var(--font-body);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-sm);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.4;
+    letter-spacing: -0.224px;
+    background: var(--canvas);
+    color: var(--ink);
+    min-height: 48px;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  textarea {
+    min-height: 84px;
+    resize: vertical;
+    font-family: var(--font-body);
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236e6e73' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--ec-blue);
+    box-shadow: 0 0 0 3px var(--ec-blue-tint);
+  }
+
+  .row-2, .row-3 {
+    display: grid;
+    gap: var(--sp-sm);
+  }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 480px) {
+    .row-2, .row-3 { grid-template-columns: 1fr; }
+  }
+
+  /* =====================================================================
+     RADIO LISTS — Apple configurator-chip influence (rounded, hairline)
+     ===================================================================== */
+  fieldset.radio-set {
+    border: none;
+    padding: 0;
+    margin: 0 0 var(--sp-sm) 0;
+  }
+  fieldset.radio-set legend {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.224px;
+    color: var(--ink);
+    margin-bottom: var(--sp-xxs);
+    padding: 0;
+  }
+  .radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-xs);
+  }
+  .radio-list.inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sp-xs);
+  }
+  .radio-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    background: var(--canvas);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-sm);
+    padding: 12px 14px;
+    cursor: pointer;
+    min-height: 48px;
+    transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+    font-size: 16px;
+    letter-spacing: -0.224px;
+  }
+  .radio-item:has(input:checked) {
+    border-color: var(--ec-blue);
+    background: var(--ec-blue-tint);
+    box-shadow: inset 0 0 0 1px var(--ec-blue);
+  }
+  .radio-item input {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--ec-blue);
+  }
+  .radio-item .note {
+    color: var(--ink-muted-48);
+    font-size: 13px;
+    margin-left: auto;
+    font-style: italic;
+    letter-spacing: -0.12px;
+  }
+  .site-walk-warn {
+    color: var(--error);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: -0.12px;
+  }
+
+  /* =====================================================================
+     ADD-ONS — segmented OFF / CHARGE / INCLUDE
+     ===================================================================== */
+  .addon-row {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    margin-bottom: var(--sp-xs);
+    background: var(--canvas);
+  }
+  .addon-row .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--sp-xs);
+    margin-bottom: var(--sp-xs);
+  }
+  .addon-row .name {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.224px;
+  }
+  .addon-row .price {
+    color: var(--ink-muted-48);
+    font-size: 13px;
+    letter-spacing: -0.12px;
+  }
+  .addon-row .controls {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    flex-wrap: wrap;
+  }
+  .seg {
+    display: inline-flex;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+    background: var(--canvas);
+  }
+  .seg label {
+    padding: 8px 14px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.12px;
+    color: var(--ink-muted-48);
+    user-select: none;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    transition: background 0.12s ease, color 0.12s ease;
+  }
+  .seg label.active.charge { background: var(--ec-blue); color: #fff; }
+  .seg label.active.include { background: var(--ec-green); color: #fff; }
+  .seg label + label { border-left: 1px solid var(--hairline-strong); }
+  .seg input { display: none; }
+  .qty-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-xs);
+    font-size: 14px;
+    color: var(--ink-muted-80);
+  }
+  .qty-wrap input {
+    width: 64px;
+    padding: 6px 8px;
+    text-align: center;
+    min-height: 36px;
+  }
+
+  /* =====================================================================
+     CHECKBOX ROW
+     ===================================================================== */
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    background: var(--canvas);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .checkbox-row input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--ec-blue);
+  }
+
+  /* =====================================================================
+     OUTPUT
+     ===================================================================== */
+  .output-area {
+    margin-top: var(--sp-md);
+  }
+  .output-area textarea {
+    width: 100%;
+    min-height: 380px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: 0;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-lg);
+    padding: var(--sp-md);
+    white-space: pre;
+    color: var(--ink);
+  }
+  .copy-status {
+    margin-top: var(--sp-xs);
+    color: var(--ec-green-dark);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.224px;
+    min-height: 1.4em;
+  }
+
+  /* =====================================================================
+     UTILITY
+     ===================================================================== */
+  .hidden { display: none !important; }
+
+  /* =====================================================================
+     GOOGLE PLACES AUTOCOMPLETE DROPDOWN STYLING
+     ===================================================================== */
+  .pac-container {
+    border-radius: var(--r-lg);
+    border: 1px solid var(--hairline-strong);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    font-family: var(--font-body);
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .pac-item {
+    padding: 10px 14px;
+    font-size: 15px;
+    letter-spacing: -0.224px;
+    border-top: 1px solid var(--hairline);
+    cursor: pointer;
+  }
+  .pac-item:first-child { border-top: none; }
+  .pac-item:hover { background: var(--canvas-parchment); }
+  .pac-item-selected, .pac-item-selected:hover { background: var(--ec-blue-tint); }
+  .pac-icon { display: none; }
+  .pac-item-query {
+    font-size: 15px;
+    color: var(--ink);
+    padding-right: 4px;
+  }
+  .pac-matched { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="title-bar">
+  <h1>EverClean Quote Tool</h1>
+  <button type="button" class="btn-utility" id="btnReset">Reset</button>
+</header>
+
+<div class="closing-script">
+  <strong>Closing the YES (no price on the call):</strong><br>
+  "Sounds great — we can definitely help. I'm putting your quote together now and will text/email it to you within 15 minutes. We never quote prices on the phone because I want to make sure you get a fair, accurate number. Sound good?"
+</div>
+
+<form id="quoteForm" autocomplete="off" onsubmit="return false;">
+
+<!-- § 1. Customer info -->
+<section class="field-group">
+  <h2>§ 1. Customer info</h2>
+  <div class="body">
+    <p class="coach">Try saying: "Thanks for reaching out — I'm [Brandon/Angela] with EverClean Lakes Area. Let me grab a few details so I can put a precise quote together for you."</p>
+    <div class="row-2">
+      <label class="field">
+        <span class="lbl">Name</span>
+        <input type="text" id="custName" placeholder="First Last">
+      </label>
+      <label class="field">
+        <span class="lbl">Phone</span>
+        <input type="tel" id="custPhone" placeholder="218-555-0000">
+      </label>
+    </div>
+    <label class="field">
+      <span class="lbl">Email <span class="opt">(optional)</span></span>
+      <input type="email" id="custEmail">
+    </label>
+    <label class="field">
+      <span class="lbl">Address / Property <span class="opt">(optional — autocompletes)</span></span>
+      <input type="text" id="custAddress" placeholder="Start typing — e.g., 12345 Lake Dr, Pequot Lakes">
+    </label>
+  </div>
+</section>
+
+<!-- § 2. Property type -->
+<section class="field-group">
+  <h2>§ 2. Property type</h2>
+  <div class="body">
+    <p class="coach">Try asking: "Is this for your home, a vacation rental, or a business space?"</p>
+    <fieldset class="radio-set">
+      <div class="radio-list" id="propTypeList">
+        <label class="radio-item"><input type="radio" name="propertyType" value="Residential" checked> Residential</label>
+        <label class="radio-item"><input type="radio" name="propertyType" value="Commercial"> Commercial <span class="note site-walk-warn">→ site walk</span></label>
+        <label class="radio-item"><input type="radio" name="propertyType" value="Resort/Multi-cabin"> Resort / Multi-cabin <span class="note site-walk-warn">→ site walk</span></label>
+      </div>
+    </fieldset>
+  </div>
+</section>
+
+<!-- § 3. Service type (residential only) -->
+<section class="field-group residential-only" id="sec-service">
+  <h2>§ 3. Service type</h2>
+  <div class="body">
+    <p class="coach">Try asking: "Are you looking for a regular maintenance clean, a one-time deep clean, a move-in or move-out, or a vacation rental turnover?"</p>
+    <fieldset class="radio-set">
+      <div class="radio-list">
+        <label class="radio-item"><input type="radio" name="serviceType" value="Standard Clean" checked> Standard Clean</label>
+        <label class="radio-item"><input type="radio" name="serviceType" value="Deep Clean"> Deep Clean</label>
+        <label class="radio-item"><input type="radio" name="serviceType" value="Move-In Prep"> Move-In Prep</label>
+        <label class="radio-item"><input type="radio" name="serviceType" value="Move-Out Deep Clean"> Move-Out Deep Clean</label>
+        <label class="radio-item"><input type="radio" name="serviceType" value="Post-Construction"> Post-Construction <span class="note site-walk-warn">→ site walk</span></label>
+        <label class="radio-item"><input type="radio" name="serviceType" value="STR Turnover"> STR / Vacation Rental Turnover</label>
+      </div>
+    </fieldset>
+  </div>
+</section>
+
+<!-- § 4. Frequency (residential only) -->
+<section class="field-group residential-only" id="sec-frequency">
+  <h2>§ 4. Frequency</h2>
+  <div class="body">
+    <p class="coach">Try asking: "Are you looking for one-time service, or are you thinking about regular cleanings — weekly, biweekly, or monthly?"</p>
+    <fieldset class="radio-set">
+      <div class="radio-list">
+        <label class="radio-item"><input type="radio" name="frequency" value="One-time" checked> One-time</label>
+        <label class="radio-item"><input type="radio" name="frequency" value="Weekly"> Weekly recurring <span class="note">−15%</span></label>
+        <label class="radio-item"><input type="radio" name="frequency" value="Biweekly"> Biweekly recurring <span class="note">−10%</span></label>
+        <label class="radio-item"><input type="radio" name="frequency" value="Monthly"> Monthly recurring <span class="note">−5%</span></label>
+      </div>
+    </fieldset>
+  </div>
+</section>
+
+<!-- § 5. Home size (residential only) -->
+<section class="field-group residential-only" id="sec-homesize">
+  <h2>§ 5. Home size</h2>
+  <div class="body">
+    <p class="coach">Try asking: "Roughly how many bedrooms and bathrooms? And do you know the approximate square footage?"</p>
+    <fieldset class="radio-set">
+      <div class="radio-list" id="homeSizeList"></div>
+    </fieldset>
+    <div class="row-3" style="margin-top: var(--sp-sm);">
+      <label class="field">
+        <span class="lbl">Beds</span>
+        <input type="text" id="beds" inputmode="decimal" placeholder="3">
+      </label>
+      <label class="field">
+        <span class="lbl">Baths</span>
+        <input type="text" id="baths" inputmode="decimal" placeholder="2">
+      </label>
+      <label class="field">
+        <span class="lbl">Sqft</span>
+        <input type="text" id="sqft" inputmode="numeric" placeholder="1500">
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- § 6. Resort details (resort only) -->
+<section class="field-group resort-only hidden" id="sec-resort">
+  <h2>§ 6. Resort details</h2>
+  <div class="body">
+    <p class="coach">Try saying: "We'll need to do a quick walkthrough for resort properties to give you an accurate quote — that's standard with multi-cabin work."</p>
+    <div class="row-2">
+      <label class="field">
+        <span class="lbl"># of buildings</span>
+        <input type="text" id="resortBuildings" inputmode="numeric">
+      </label>
+      <label class="field">
+        <span class="lbl"># of cabins / units</span>
+        <input type="text" id="resortCabins" inputmode="numeric">
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- § 7. Scheduling -->
+<section class="field-group">
+  <h2>§ 7. Scheduling</h2>
+  <div class="body">
+    <p class="coach">Try asking: "When are you looking to get this done? Is there a specific date, or are you flexible?"</p>
+    <fieldset class="radio-set">
+      <div class="radio-list">
+        <label class="radio-item"><input type="radio" name="scheduling" value="same-day"> Same-day <span class="note">+25%</span></label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="1-2 days"> Within 1–2 days <span class="note">+15%</span></label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="this week"> This week</label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="next week" checked> Next week</label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="next month"> Next month</label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="flexible"> Flexible / not sure</label>
+        <label class="radio-item"><input type="radio" name="scheduling" value="recurring"> Recurring schedule</label>
+      </div>
+    </fieldset>
+  </div>
+</section>
+
+<!-- § 8. Scope traps -->
+<section class="field-group">
+  <h2>§ 8. Scope traps</h2>
+  <div class="body">
+    <p class="coach">Try saying: "A few quick questions so I don't miss anything important..." — go through linens, towels, W/D, pets, hazards naturally. <strong>Don't skip these — they're how we avoid under-quoting.</strong></p>
+
+    <fieldset class="radio-set">
+      <legend>Linens provided fresh by client?</legend>
+      <div class="radio-list inline">
+        <label class="radio-item"><input type="radio" name="linensProvided" value="Y" checked> Yes</label>
+        <label class="radio-item"><input type="radio" name="linensProvided" value="N"> No</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="radio-set">
+      <legend>Towels provided fresh?</legend>
+      <div class="radio-list inline">
+        <label class="radio-item"><input type="radio" name="towelsFresh" value="Y" checked> Yes</label>
+        <label class="radio-item"><input type="radio" name="towelsFresh" value="N"> No</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="radio-set">
+      <legend>W/D on-site?</legend>
+      <div class="radio-list inline">
+        <label class="radio-item"><input type="radio" name="washerDryer" value="Y"> Yes</label>
+        <label class="radio-item"><input type="radio" name="washerDryer" value="N" checked> No</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="radio-set">
+      <legend>Pets in home?</legend>
+      <div class="radio-list inline">
+        <label class="radio-item"><input type="radio" name="pets" value="Y"> Yes</label>
+        <label class="radio-item"><input type="radio" name="pets" value="N" checked> No</label>
+      </div>
+    </fieldset>
+
+    <label class="field">
+      <span class="lbl">Last professional clean?</span>
+      <select id="lastClean">
+        <option value="Never">Never</option>
+        <option value="<1 month">&lt; 1 month</option>
+        <option value="1–6 months">1–6 months</option>
+        <option value="6+ months">6+ months</option>
+      </select>
+    </label>
+
+    <fieldset class="radio-set">
+      <legend>Hazardous conditions (mold, smoke, biohazard, post-reno)?</legend>
+      <div class="radio-list inline">
+        <label class="radio-item"><input type="radio" name="hazardous" value="Y"> Yes <span class="note site-walk-warn">→ site walk</span></label>
+        <label class="radio-item"><input type="radio" name="hazardous" value="N" checked> No</label>
+      </div>
+    </fieldset>
+  </div>
+</section>
+
+<!-- § 9. Add-ons -->
+<section class="field-group">
+  <h2>§ 9. Add-ons</h2>
+  <div class="body">
+    <p class="coach">Try asking: "Anything special you're hoping for — inside the oven, baseboards, windows, anything like that?" — Default is OFF. Tap CHARGE to bill the customer; tap INCLUDE to bundle it free into a contract.</p>
+    <div id="addOnList"></div>
+  </div>
+</section>
+
+<!-- § 10. First-time discount -->
+<section class="field-group">
+  <h2>§ 10. First-time discount (optional)</h2>
+  <div class="body">
+    <p class="coach">Discount is OPTIONAL. Use it only when needed to close. Type the reason — it's internal-only and helps us track what wins deals.</p>
+    <div class="row-2">
+      <label class="field">
+        <span class="lbl">Amount $</span>
+        <input type="text" id="discountAmount" inputmode="decimal" placeholder="0">
+      </label>
+      <label class="field">
+        <span class="lbl">Reason <span class="opt">(required if &gt; $0)</span></span>
+        <input type="text" id="discountReason" placeholder="e.g., Hesitating on price">
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- § 11. Notes -->
+<section class="field-group">
+  <h2>§ 11. Notes (internal)</h2>
+  <div class="body">
+    <p class="coach">Use this for anything Brandon should remember when arriving — gate code, dog name, special requests.</p>
+    <label class="field">
+      <span class="lbl">Notes</span>
+      <textarea id="notes"></textarea>
+    </label>
+  </div>
+</section>
+
+<!-- § 12. Site walk override -->
+<section class="field-group">
+  <h2>§ 12. Manual site-walk override</h2>
+  <div class="body">
+    <p class="coach">Use this when something feels off about the property — gut says it needs eyes-on before quoting.</p>
+    <label class="checkbox-row">
+      <input type="checkbox" id="siteWalkOverride">
+      Force site walk (skip auto-quote)
+    </label>
+  </div>
+</section>
+
+<div class="confidence">
+  <strong>Before you send the quote, remember:</strong>
+  <ul>
+    <li>Our prices reflect a 2-person team, eco supplies, consistent crew, and our quality.</li>
+    <li>If the price feels uncomfortable to send, that's normal. Send it anyway.</li>
+    <li>"We back our work." — not "I hope this is okay."</li>
+    <li>A "no" from a price-shopper is fine. They're not our customer.</li>
+  </ul>
+</div>
+
+<div class="error-box" id="errorBox"></div>
+
+<button type="button" class="btn-primary btn-block" id="btnGenerate">Generate Quote</button>
+
+<div class="output-area">
+  <p class="coach" style="margin-top: var(--sp-md);">Read the quote ONE TIME before sending. Check that included items show their value. Then copy and send via Quo within 15 minutes of the call ending.</p>
+  <textarea id="output" readonly placeholder="Quote text will appear here after you tap Generate Quote."></textarea>
+  <button type="button" class="btn-secondary btn-block" id="btnCopy" style="margin-top: var(--sp-xs);">Copy to Clipboard</button>
+  <div class="copy-status" id="copyStatus"></div>
+</div>
+
+</form>
+</div>
+
+<script>
+// =========================================================================
+// CONFIG — edit values here when rates change. No code touch needed.
+// =========================================================================
+const CONFIG = {
+  // --- Google Places API key ---------------------------------------------
+  // Leave "" to disable autocomplete (form still works as plain text).
+  // Setup: Google Cloud Console → enable Places API + Maps JavaScript API
+  // → create API key → restrict to your GitHub Pages domain (HTTP referrer).
+  // Paste key between the quotes:
+  googleMapsApiKey: "AIzaSyBJUI0lo_QIAev-0NhNTA9AFlX7sO-wYV0",
+
+  // --- Pricing -----------------------------------------------------------
+  minimumQuote: 160,
+
+  rushSurcharges: {
+    "same-day":   0.25,
+    "1-2 days":   0.15,
+    "this week":  0,
+    "next week":  0,
+    "next month": 0,
+    "flexible":   0,
+    "recurring":  0
+  },
+
+  rateCard: {
+    "Standard Clean": {
+      "Studio":   { "standard": 160, "weekly": 136, "biweekly": 144, "monthly": 152 },
+      "Small":    { "standard": 185, "weekly": 157, "biweekly": 167, "monthly": 176 },
+      "Medium":   { "standard": 225, "weekly": 191, "biweekly": 203, "monthly": 214 },
+      "Large":    { "standard": 285, "weekly": 242, "biweekly": 257, "monthly": 271 },
+      "XL":       { "standard": 350, "weekly": 298, "biweekly": 315, "monthly": 333 }
+    },
+    "Deep Clean": {
+      "Studio":   { "standard": 240 },
+      "Small":    { "standard": 280 },
+      "Medium":   { "standard": 340 },
+      "Large":    { "standard": 420 },
+      "XL":       { "standard": 520 }
+    },
+    "Move-In Prep": {
+      "Studio":   { "standard": 180 },
+      "Small":    { "standard": 200 },
+      "Medium":   { "standard": 240 },
+      "Large":    { "standard": 300 },
+      "XL":       { "standard": 380 }
+    },
+    "Move-Out Deep Clean": {
+      "Studio":   { "standard": 220 },
+      "Small":    { "standard": 250 },
+      "Medium":   { "standard": 290 },
+      "Large":    { "standard": 360 },
+      "XL":       { "standard": 440 }
+    },
+    "STR Turnover": {
+      "Studio":   { "standard": 160 },
+      "Small":    { "standard": 160 },
+      "Medium":   { "standard": 195 },
+      "Large":    { "standard": 250 }
+    }
+  },
+
+  homeSizes: [
+    { id: "Studio",  label: "Studio (≤900 sqft, 1BR/1BA)",     sqftMin: 0,    sqftMax: 900 },
+    { id: "Small",   label: "Small (900–1,200, 2BR/1BA)",      sqftMin: 900,  sqftMax: 1200 },
+    { id: "Medium",  label: "Medium (1,200–1,800, 3BR/2BA)",   sqftMin: 1200, sqftMax: 1800 },
+    { id: "Large",   label: "Large (1,800–2,500, 4BR/2-3BA)",  sqftMin: 1800, sqftMax: 2500 },
+    { id: "XL",      label: "XL (2,500–3,500, 5+BR/3+BA)",     sqftMin: 2500, sqftMax: 3500 },
+    { id: "Estate",  label: "Estate / Custom (3,500+ sqft)",   sqftMin: 3500, sqftMax: 999999, siteWalk: true }
+  ],
+
+  addOns: [
+    { id: "oven",         label: "Oven interior",                          price: 55,  perUnit: false },
+    { id: "fridge",       label: "Refrigerator interior",                  price: 45,  perUnit: false },
+    { id: "cabinets",     label: "Inside cabinets (kitchen)",              price: 135, perUnit: false },
+    { id: "baseboards",   label: "Baseboards (whole house)",               price: 80,  perUnit: false },
+    { id: "wallWashing",  label: "Wall washing",                           price: 45,  perUnit: true,  unitLabel: "room" },
+    { id: "windows",      label: "Window washing",                         price: 10,  perUnit: true,  unitLabel: "window" },
+    { id: "linens",       label: "Linen change (strip + remake)",          price: 20,  perUnit: true,  unitLabel: "bed" },
+    { id: "laundry",      label: "Laundry load",                           price: 25,  perUnit: true,  unitLabel: "load" },
+    { id: "patio",        label: "Patio / deck sweep",                     price: 25,  perUnit: false },
+    { id: "garage",       label: "Garage sweep",                           price: 35,  perUnit: false },
+    { id: "tileGrout",    label: "Tile & grout scrub",                     price: 55,  perUnit: true,  unitLabel: "room" },
+    { id: "damageReport", label: "Damage / condition photo report (STR)", price: 25,  perUnit: false }
+  ],
+
+  scopeSummaries: {
+    "Standard Clean":      "Kitchen, bathrooms, bedrooms, common areas — full surface clean, vacuum, mop. Eco/green supplies included.",
+    "Deep Clean":          "Full Standard Clean PLUS baseboards, wall spot-cleaning, inside cabinets/appliance detail, grout spot-check. Eco/green supplies included.",
+    "Move-In Prep":        "Top-to-bottom whole-home prep — appliance interiors, cabinets, surfaces, floors. Move-in ready. Eco/green supplies included.",
+    "Move-Out Deep Clean": "Full empty-home clean — appliance interiors, cabinets, walls, floors. Ready for new tenants. Eco/green supplies included.",
+    "STR Turnover":        "Guest-ready turnover — kitchen, bathrooms, bedrooms with linen change, restock visible supplies, condition photo report. Eco/green supplies included."
+  },
+
+  business: {
+    name:              "EverClean Lakes Area",
+    phone:             "218-568-3700",
+    website:           "evercleanlakesarea.com",
+    quoteValidityDays: 7
+  }
+};
+
+// =========================================================================
+// FORM RENDERING
+// =========================================================================
+function renderHomeSizes() {
+  const list = document.getElementById("homeSizeList");
+  list.innerHTML = CONFIG.homeSizes.map((sz, i) => {
+    const checked = i === 2 ? " checked" : "";
+    const note = sz.siteWalk ? ' <span class="note site-walk-warn">→ site walk</span>' : "";
+    return `<label class="radio-item"><input type="radio" name="homeSize" value="${sz.id}"${checked}> ${escapeHtml(sz.label)}${note}</label>`;
+  }).join("");
+}
+
+function renderAddOns() {
+  const list = document.getElementById("addOnList");
+  list.innerHTML = CONFIG.addOns.map(a => {
+    const priceLabel = a.perUnit ? `$${a.price}/${a.unitLabel}` : `$${a.price}`;
+    const qtyHtml = a.perUnit
+      ? `<span class="qty-wrap" data-addon-qty="${a.id}" style="display:none;">Qty <input type="text" inputmode="numeric" value="1" data-qty-input="${a.id}"></span>`
+      : "";
+    return `
+      <div class="addon-row" data-addon="${a.id}">
+        <div class="top">
+          <span class="name">${escapeHtml(a.label)}</span>
+          <span class="price">${priceLabel}</span>
+        </div>
+        <div class="controls">
+          <span class="seg" data-seg="${a.id}">
+            <label data-state="OFF" class="active">
+              <input type="radio" name="addon-${a.id}" value="OFF" checked>OFF
+            </label>
+            <label data-state="CHARGE" class="charge">
+              <input type="radio" name="addon-${a.id}" value="CHARGE">CHARGE
+            </label>
+            <label data-state="INCLUDE" class="include">
+              <input type="radio" name="addon-${a.id}" value="INCLUDE">INCLUDE
+            </label>
+          </span>
+          ${qtyHtml}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll('[data-seg]').forEach(seg => {
+    const id = seg.getAttribute('data-seg');
+    seg.addEventListener('change', () => {
+      const state = seg.querySelector('input:checked').value;
+      seg.querySelectorAll('label').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('data-state') === state);
+      });
+      const qty = document.querySelector(`[data-addon-qty="${id}"]`);
+      if (qty) qty.style.display = state === "OFF" ? "none" : "inline-flex";
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+// =========================================================================
+// SHOW / HIDE
+// =========================================================================
+function syncVisibility() {
+  const propType = document.querySelector('input[name="propertyType"]:checked').value;
+  const isRes = propType === "Residential";
+  const isResort = propType === "Resort/Multi-cabin";
+  document.querySelectorAll('.residential-only').forEach(s => s.classList.toggle('hidden', !isRes));
+  document.querySelectorAll('.resort-only').forEach(s => s.classList.toggle('hidden', !isResort));
+}
+
+// =========================================================================
+// FORM DATA
+// =========================================================================
+function collectFormData() {
+  const propType = document.querySelector('input[name="propertyType"]:checked').value;
+  const serviceTypeEl = document.querySelector('input[name="serviceType"]:checked');
+  const frequencyEl = document.querySelector('input[name="frequency"]:checked');
+  const homeSizeEl = document.querySelector('input[name="homeSize"]:checked');
+  const schedulingEl = document.querySelector('input[name="scheduling"]:checked');
+
+  const addOns = CONFIG.addOns.map(a => {
+    const stateEl = document.querySelector(`input[name="addon-${a.id}"]:checked`);
+    const state = stateEl ? stateEl.value : "OFF";
+    let qty = 1;
+    if (a.perUnit) {
+      const qtyEl = document.querySelector(`[data-qty-input="${a.id}"]`);
+      qty = qtyEl ? parseInt(qtyEl.value, 10) || 0 : 0;
+    }
+    return { id: a.id, state, qty };
+  });
+
+  const discountAmountRaw = (document.getElementById('discountAmount').value || "").trim();
+  const discountAmount = discountAmountRaw === "" ? 0 : (parseFloat(discountAmountRaw) || 0);
+
+  return {
+    name:        document.getElementById('custName').value.trim(),
+    phone:       document.getElementById('custPhone').value.trim(),
+    email:       document.getElementById('custEmail').value.trim(),
+    address:     document.getElementById('custAddress').value.trim(),
+    propertyType: propType,
+    serviceType:  serviceTypeEl ? serviceTypeEl.value : "",
+    frequency:    frequencyEl ? frequencyEl.value : "One-time",
+    homeSize:     homeSizeEl ? homeSizeEl.value : "",
+    beds:        document.getElementById('beds').value.trim(),
+    baths:       document.getElementById('baths').value.trim(),
+    sqft:        document.getElementById('sqft').value.trim(),
+    resortBuildings: document.getElementById('resortBuildings').value.trim(),
+    resortCabins:    document.getElementById('resortCabins').value.trim(),
+    scheduling:  schedulingEl ? schedulingEl.value : "next week",
+    linensProvided: (document.querySelector('input[name="linensProvided"]:checked') || {}).value || "",
+    towelsFresh:    (document.querySelector('input[name="towelsFresh"]:checked') || {}).value || "",
+    washerDryer:    (document.querySelector('input[name="washerDryer"]:checked') || {}).value || "",
+    pets:           (document.querySelector('input[name="pets"]:checked') || {}).value || "",
+    lastClean:      document.getElementById('lastClean').value,
+    hazardousConditions: (document.querySelector('input[name="hazardous"]:checked') || {}).value || "N",
+    addOns,
+    firstTimeDiscount:       discountAmount,
+    firstTimeDiscountReason: document.getElementById('discountReason').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    manualSiteWalkOverride: document.getElementById('siteWalkOverride').checked
+  };
+}
+
+// =========================================================================
+// SITE-WALK DETERMINATION
+// =========================================================================
+function siteWalkReason(d) {
+  if (d.propertyType === "Commercial") return "commercial space";
+  if (d.propertyType === "Resort/Multi-cabin") return "resort / multi-cabin property";
+  if (d.serviceType === "Post-Construction") return "post-construction property";
+  if (d.homeSize === "Estate") return "large / estate-tier property";
+  if (d.hazardousConditions === "Y") return "property condition";
+  if (d.manualSiteWalkOverride) return "property";
+  return null;
+}
+
+// =========================================================================
+// QUOTE GENERATION
+// =========================================================================
+function generateQuote(d) {
+  const reason = siteWalkReason(d);
+  if (reason) {
+    return { type: "site-walk", text: renderSiteWalk(d, reason) };
+  }
+  if (d.firstTimeDiscount > 0 && !d.firstTimeDiscountReason) {
+    return { type: "error", text: "Reason required when first-time discount > $0." };
+  }
+  const sizeRow = (CONFIG.rateCard[d.serviceType] || {})[d.homeSize];
+  if (!sizeRow) {
+    return { type: "error", text: `No rate card entry for ${d.serviceType} / ${d.homeSize}. Use site walk override.` };
+  }
+  let baseRate;
+  if (d.frequency === "Weekly")        baseRate = sizeRow.weekly;
+  else if (d.frequency === "Biweekly") baseRate = sizeRow.biweekly;
+  else if (d.frequency === "Monthly")  baseRate = sizeRow.monthly;
+  else                                  baseRate = sizeRow.standard;
+  if (baseRate == null) {
+    return { type: "error", text: `${d.serviceType} ${d.homeSize} doesn't have a ${d.frequency} rate. Use site walk override.` };
+  }
+
+  let addOnsCharged = 0;
+  let addOnsIncludedValue = 0;
+  const chargedItems = [];
+  const includedItems = [];
+  for (const sel of d.addOns) {
+    if (sel.state === "OFF") continue;
+    const cfg = CONFIG.addOns.find(a => a.id === sel.id);
+    if (!cfg) continue;
+    const qty = cfg.perUnit ? (sel.qty || 0) : 1;
+    if (qty <= 0) continue;
+    const lineTotal = cfg.price * qty;
+    if (sel.state === "CHARGE") {
+      addOnsCharged += lineTotal;
+      chargedItems.push({ cfg, qty, lineTotal });
+    } else if (sel.state === "INCLUDE") {
+      addOnsIncludedValue += lineTotal;
+      includedItems.push({ cfg, qty, lineTotal });
+    }
+  }
+
+  const subtotal = baseRate + addOnsCharged;
+  const rushPct = CONFIG.rushSurcharges[d.scheduling] || 0;
+  const rushAmount = Math.round(subtotal * rushPct);
+  const discount = d.firstTimeDiscount || 0;
+  let total = subtotal + rushAmount - discount;
+  let flooredToMin = false;
+  if (total < CONFIG.minimumQuote) {
+    total = CONFIG.minimumQuote;
+    flooredToMin = true;
+  }
+
+  return {
+    type: "quote",
+    text: renderQuote(d, {
+      baseRate, addOnsCharged, addOnsIncludedValue,
+      chargedItems, includedItems,
+      rushPct, rushAmount, discount, total, flooredToMin
+    })
+  };
+}
+
+// =========================================================================
+// OUTPUT TEMPLATES
+// =========================================================================
+function fmt$(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+
+function renderSiteWalk(d, reason) {
+  const name = d.name || "there";
+  const propLabel = (
+    d.propertyType === "Resort/Multi-cabin" ? "resort property" :
+    d.propertyType === "Commercial"          ? "commercial space"  :
+    d.homeSize === "Estate"                  ? "property"          :
+    d.serviceType === "Post-Construction"    ? "post-construction project" :
+    d.hazardousConditions === "Y"            ? "property"          :
+                                              "property"
+  );
+  const area = d.address || "the lakes area";
+  const B = CONFIG.business;
+
+  return [
+    `Hi ${name},`,
+    ``,
+    `Thanks for reaching out about your ${propLabel} in ${area}! Because every ${reason} is unique, we'd like to do a quick (no-cost) walkthrough before quoting — that way we can give you an accurate price based on what you actually need, not a guess.`,
+    ``,
+    `Walkthroughs take about 15–20 minutes. We can either bring a written quote with us or send it within 24 hours after.`,
+    ``,
+    `When works for you? Reply with a couple of times that work, or call us at ${B.phone}.`,
+    ``,
+    `— Brandon & Angela`,
+    `${B.name}`,
+    `${B.website}`
+  ].join("\n");
+}
+
+function renderQuote(d, calc) {
+  const name = d.name || "there";
+  const B = CONFIG.business;
+  const sizeLabel = (CONFIG.homeSizes.find(s => s.id === d.homeSize) || {}).label || d.homeSize;
+  const beds  = d.beds  || "—";
+  const baths = d.baths || "—";
+  const sqft  = d.sqft  || "—";
+  const addressLine = d.address ? d.address : "your property";
+
+  const lines = [];
+  lines.push(`Hi ${name},`);
+  lines.push("");
+  lines.push(`Thanks for reaching out to ${B.name}! Here's your quote for cleaning at ${addressLine}:`);
+  lines.push("");
+  lines.push(`${d.serviceType} — ${sizeLabel} (${beds}BR/${baths}BA, ~${sqft} sqft)`);
+  lines.push("");
+  lines.push("Includes:");
+  lines.push(`  • ${CONFIG.scopeSummaries[d.serviceType] || ""}`);
+  lines.push(`  • Same 2-person team every visit (whenever scheduling allows)`);
+
+  if (calc.includedItems.length > 0) {
+    lines.push("");
+    lines.push("Bundled in your contract at no extra charge:");
+    for (const item of calc.includedItems) {
+      const qtyTxt = item.cfg.perUnit ? ` × ${item.qty}` : "";
+      lines.push(`  • ${item.cfg.label}${qtyTxt} — INCLUDED (regularly ${fmt$(item.lineTotal)})`);
+    }
+    lines.push(`  Total bundled value: ${fmt$(calc.addOnsIncludedValue)} — included at no charge.`);
+  }
+
+  if (calc.chargedItems.length > 0) {
+    lines.push("");
+    lines.push("Add-ons:");
+    for (const item of calc.chargedItems) {
+      if (item.cfg.perUnit) {
+        lines.push(`  • ${item.cfg.label}: ${fmt$(item.cfg.price)} × ${item.qty} = ${fmt$(item.lineTotal)}`);
+      } else {
+        lines.push(`  • ${item.cfg.label}: ${fmt$(item.lineTotal)}`);
+      }
+    }
+  }
+
+  const isRecurring = ["Weekly", "Biweekly", "Monthly"].includes(d.frequency);
+  if (isRecurring && d.serviceType !== "Deep Clean") {
+    const deepRow = CONFIG.rateCard["Deep Clean"][d.homeSize];
+    const deepRate = deepRow ? deepRow.standard : null;
+    lines.push("");
+    if (deepRate) {
+      lines.push(`Note: All new recurring clients begin with a one-time Deep Clean to establish the baseline. Deep Clean is ${fmt$(deepRate)}; recurring ${d.frequency.toLowerCase()} visits at the rate below.`);
+    } else {
+      lines.push(`Note: All new recurring clients begin with a one-time Deep Clean to establish the baseline. Recurring ${d.frequency.toLowerCase()} visits at the rate below.`);
+    }
+  }
+
+  lines.push("");
+  lines.push("Pricing:");
+  const freqLabel = d.frequency === "One-time" ? "one-time" : d.frequency.toLowerCase();
+  lines.push(padPair(`  Base rate (${d.serviceType}, ${freqLabel}):`, fmt$(calc.baseRate)));
+  if (calc.addOnsCharged > 0) {
+    lines.push(padPair(`  Add-ons:`, "+" + fmt$(calc.addOnsCharged)));
+  }
+  if (calc.rushAmount > 0) {
+    const pct = Math.round(calc.rushPct * 100);
+    lines.push(padPair(`  Rush surcharge (+${pct}%):`, "+" + fmt$(calc.rushAmount)));
+  }
+  if (calc.discount > 0) {
+    lines.push(padPair(`  First-time client discount:`, "−" + fmt$(calc.discount)));
+  }
+  if (calc.flooredToMin) {
+    lines.push(padPair(`  Minimum quote:`, fmt$(CONFIG.minimumQuote)));
+  }
+  lines.push(`  ────────────────────────────────────`);
+  lines.push(padPair(`  Total:`, fmt$(calc.total)));
+
+  lines.push("");
+  lines.push(`Quote good for ${B.quoteValidityDays} days. Reply YES to book or call us at ${B.phone} with questions.`);
+  lines.push("");
+  lines.push(`— Brandon & Angela`);
+  lines.push(`${B.name}`);
+  lines.push(`${B.website}`);
+
+  return lines.join("\n");
+}
+
+function padPair(left, right) {
+  const target = 44;
+  let pad = target - left.length - right.length;
+  if (pad < 1) pad = 1;
+  return left + " ".repeat(pad) + right;
+}
+
+// =========================================================================
+// GOOGLE PLACES AUTOCOMPLETE
+// =========================================================================
+function loadGoogleMaps() {
+  if (!CONFIG.googleMapsApiKey) return;
+  if (window.google && window.google.maps) {
+    initAutocomplete();
+    return;
+  }
+  window.initAutocomplete = initAutocomplete;
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(CONFIG.googleMapsApiKey)}&libraries=places&loading=async&callback=initAutocomplete`;
+  script.async = true;
+  script.defer = true;
+  script.onerror = () => console.warn("Google Maps API failed to load — address autocomplete disabled.");
+  document.head.appendChild(script);
+}
+
+function initAutocomplete() {
+  const input = document.getElementById('custAddress');
+  if (!input || !window.google || !google.maps || !google.maps.places) return;
+  try {
+    // Bias to Brainerd Lakes Area — roughly Crow Wing & Cass Counties, MN
+    const lakesAreaBounds = new google.maps.LatLngBounds(
+      new google.maps.LatLng(45.8, -95.0),
+      new google.maps.LatLng(47.5, -93.0)
+    );
+    const ac = new google.maps.places.Autocomplete(input, {
+      bounds: lakesAreaBounds,
+      componentRestrictions: { country: 'us' },
+      fields: ['formatted_address'],
+      types: ['address']
+    });
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      if (place && place.formatted_address) {
+        input.value = place.formatted_address;
+      }
+    });
+  } catch (e) {
+    console.warn("Address autocomplete init failed:", e);
+  }
+}
+
+// =========================================================================
+// EVENT HANDLERS
+// =========================================================================
+function handleGenerate() {
+  const errBox = document.getElementById('errorBox');
+  errBox.classList.remove('show');
+  errBox.textContent = "";
+
+  const d = collectFormData();
+  const result = generateQuote(d);
+
+  if (result.type === "error") {
+    errBox.textContent = result.text;
+    errBox.classList.add('show');
+    document.getElementById('output').value = "";
+    errBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  document.getElementById('output').value = result.text;
+  document.getElementById('copyStatus').textContent = "";
+  document.getElementById('output').scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function handleCopy() {
+  const ta = document.getElementById('output');
+  const status = document.getElementById('copyStatus');
+  const text = ta.value;
+  if (!text) {
+    status.textContent = "Nothing to copy yet — generate a quote first.";
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => { status.textContent = "✓ Copied to clipboard."; },
+      () => { fallbackCopy(ta, status); }
+    );
+  } else {
+    fallbackCopy(ta, status);
+  }
+}
+
+function fallbackCopy(ta, status) {
+  try {
+    ta.removeAttribute('readonly');
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.setAttribute('readonly', '');
+    status.textContent = ok ? "✓ Copied to clipboard." : "Couldn't auto-copy. Long-press the text to copy manually.";
+  } catch (e) {
+    status.textContent = "Couldn't auto-copy. Long-press the text to copy manually.";
+  }
+}
+
+function handleReset() {
+  if (!confirm("Reset the form? All entries will be cleared.")) return;
+  document.getElementById('quoteForm').reset();
+  document.querySelectorAll('[data-seg]').forEach(seg => {
+    seg.querySelectorAll('label').forEach(l => l.classList.remove('active'));
+    const offLabel = seg.querySelector('label[data-state="OFF"]');
+    if (offLabel) offLabel.classList.add('active');
+  });
+  document.querySelectorAll('[data-addon-qty]').forEach(q => q.style.display = "none");
+  document.getElementById('output').value = "";
+  document.getElementById('copyStatus').textContent = "";
+  document.getElementById('errorBox').classList.remove('show');
+  syncVisibility();
+}
+
+// =========================================================================
+// INIT
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderHomeSizes();
+  renderAddOns();
+  syncVisibility();
+
+  document.querySelectorAll('input[name="propertyType"]').forEach(r => {
+    r.addEventListener('change', syncVisibility);
+  });
+  document.getElementById('btnGenerate').addEventListener('click', handleGenerate);
+  document.getElementById('btnCopy').addEventListener('click', handleCopy);
+  document.getElementById('btnReset').addEventListener('click', handleReset);
+
+  loadGoogleMaps();
+});
+</script>
+
+</body>
+</html>
