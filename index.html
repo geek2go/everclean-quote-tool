@@ -453,6 +453,14 @@
     font-size: 13px;
     letter-spacing: -0.12px;
   }
+  .addon-row .addon-note {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--ink-muted-48);
+    letter-spacing: -0.12px;
+    line-height: 1.4;
+    margin: 0 0 var(--sp-xs) 0;
+  }
   .addon-row .controls {
     display: flex;
     align-items: center;
@@ -480,6 +488,7 @@
     align-items: center;
     transition: background 0.12s ease, color 0.12s ease;
   }
+  .seg label.active { background: var(--ec-dark-gray); color: #fff; }
   .seg label.active.charge { background: var(--ec-blue); color: #fff; }
   .seg label.active.include { background: var(--ec-green); color: #fff; }
   .seg label + label { border-left: 1px solid var(--hairline-strong); }
@@ -596,9 +605,9 @@
 
 <form id="quoteForm" autocomplete="off" onsubmit="return false;">
 
-<!-- § 1. Customer info -->
+<!-- 1. Customer info -->
 <section class="field-group">
-  <h2>§ 1. Customer info</h2>
+  <h2>1. Customer info</h2>
   <div class="body">
     <p class="coach">Try saying: "Thanks for reaching out — I'm [Brandon/Angela] with EverClean Lakes Area. Let me grab a few details so I can put a precise quote together for you."</p>
     <div class="row-2">
@@ -622,9 +631,9 @@
   </div>
 </section>
 
-<!-- § 2. Property type -->
+<!-- 2. Property type -->
 <section class="field-group">
-  <h2>§ 2. Property type</h2>
+  <h2>2. Property type</h2>
   <div class="body">
     <p class="coach">Try asking: "Is this for your home, a vacation rental, or a business space?"</p>
     <fieldset class="radio-set">
@@ -637,9 +646,9 @@
   </div>
 </section>
 
-<!-- § 3. Service type (residential only) -->
+<!-- 3. Service type (residential only) -->
 <section class="field-group residential-only" id="sec-service">
-  <h2>§ 3. Service type</h2>
+  <h2>3. Service type</h2>
   <div class="body">
     <p class="coach">Try asking: "Are you looking for a regular maintenance clean, a one-time deep clean, a move-in or move-out, or a vacation rental turnover?"</p>
     <fieldset class="radio-set">
@@ -655,9 +664,9 @@
   </div>
 </section>
 
-<!-- § 4. Frequency (residential only) -->
+<!-- 4. Frequency (residential only) -->
 <section class="field-group residential-only" id="sec-frequency">
-  <h2>§ 4. Frequency</h2>
+  <h2>4. Frequency</h2>
   <div class="body">
     <p class="coach">Try asking: "Are you looking for one-time service, or are you thinking about regular cleanings — weekly, biweekly, or monthly?"</p>
     <fieldset class="radio-set">
@@ -671,9 +680,9 @@
   </div>
 </section>
 
-<!-- § 5. Home size (residential only) -->
+<!-- 5. Home size (residential only) -->
 <section class="field-group residential-only" id="sec-homesize">
-  <h2>§ 5. Home size</h2>
+  <h2>5. Home size</h2>
   <div class="body">
     <p class="coach">Try asking: "Roughly how many bedrooms and bathrooms? And do you know the approximate square footage?"</p>
     <fieldset class="radio-set">
@@ -696,9 +705,9 @@
   </div>
 </section>
 
-<!-- § 6. Resort details (resort only) -->
+<!-- 6. Resort details (resort only) -->
 <section class="field-group resort-only hidden" id="sec-resort">
-  <h2>§ 6. Resort details</h2>
+  <h2>6. Resort details</h2>
   <div class="body">
     <p class="coach">Try saying: "We'll need to do a quick walkthrough for resort properties to give you an accurate quote — that's standard with multi-cabin work."</p>
     <div class="row-2">
@@ -714,9 +723,9 @@
   </div>
 </section>
 
-<!-- § 7. Scheduling -->
+<!-- 7. Scheduling -->
 <section class="field-group">
-  <h2>§ 7. Scheduling</h2>
+  <h2>7. Scheduling</h2>
   <div class="body">
     <p class="coach">Try asking: "When are you looking to get this done? Is there a specific date, or are you flexible?"</p>
     <fieldset class="radio-set">
@@ -733,9 +742,9 @@
   </div>
 </section>
 
-<!-- § 8. Scope traps -->
+<!-- 8. Scope traps -->
 <section class="field-group">
-  <h2>§ 8. Scope traps</h2>
+  <h2>8. Scope traps</h2>
   <div class="body">
     <p class="coach">Try saying: "A few quick questions so I don't miss anything important..." — go through linens, towels, W/D, pets, hazards naturally. <strong>Don't skip these — they're how we avoid under-quoting.</strong></p>
 
@@ -744,6 +753,7 @@
       <div class="radio-list inline">
         <label class="radio-item"><input type="radio" name="linensProvided" value="Y" checked> Yes</label>
         <label class="radio-item"><input type="radio" name="linensProvided" value="N"> No</label>
+        <label class="radio-item"><input type="radio" name="linensProvided" value="N/A"> N/A</label>
       </div>
     </fieldset>
 
@@ -752,6 +762,7 @@
       <div class="radio-list inline">
         <label class="radio-item"><input type="radio" name="towelsFresh" value="Y" checked> Yes</label>
         <label class="radio-item"><input type="radio" name="towelsFresh" value="N"> No</label>
+        <label class="radio-item"><input type="radio" name="towelsFresh" value="N/A"> N/A</label>
       </div>
     </fieldset>
 
@@ -760,6 +771,7 @@
       <div class="radio-list inline">
         <label class="radio-item"><input type="radio" name="washerDryer" value="Y"> Yes</label>
         <label class="radio-item"><input type="radio" name="washerDryer" value="N" checked> No</label>
+        <label class="radio-item"><input type="radio" name="washerDryer" value="N/A"> N/A</label>
       </div>
     </fieldset>
 
@@ -791,18 +803,18 @@
   </div>
 </section>
 
-<!-- § 9. Add-ons -->
+<!-- 9. Add-ons -->
 <section class="field-group">
-  <h2>§ 9. Add-ons</h2>
+  <h2>9. Add-ons</h2>
   <div class="body">
     <p class="coach">Try asking: "Anything special you're hoping for — inside the oven, baseboards, windows, anything like that?" — Default is OFF. Tap CHARGE to bill the customer; tap INCLUDE to bundle it free into a contract.</p>
     <div id="addOnList"></div>
   </div>
 </section>
 
-<!-- § 10. First-time discount -->
+<!-- 10. First-time discount -->
 <section class="field-group">
-  <h2>§ 10. First-time discount (optional)</h2>
+  <h2>10. First-time discount (optional)</h2>
   <div class="body">
     <p class="coach">Discount is OPTIONAL. Use it only when needed to close. Type the reason — it's internal-only and helps us track what wins deals.</p>
     <div class="row-2">
@@ -818,9 +830,9 @@
   </div>
 </section>
 
-<!-- § 11. Notes -->
+<!-- 11. Notes -->
 <section class="field-group">
-  <h2>§ 11. Notes (internal)</h2>
+  <h2>11. Notes (internal)</h2>
   <div class="body">
     <p class="coach">Use this for anything Brandon should remember when arriving — gate code, dog name, special requests.</p>
     <label class="field">
@@ -830,9 +842,9 @@
   </div>
 </section>
 
-<!-- § 12. Site walk override -->
+<!-- 12. Site walk override -->
 <section class="field-group">
-  <h2>§ 12. Manual site-walk override</h2>
+  <h2>12. Manual site-walk override</h2>
   <div class="body">
     <p class="coach">Use this when something feels off about the property — gut says it needs eyes-on before quoting.</p>
     <label class="checkbox-row">
@@ -942,8 +954,8 @@ const CONFIG = {
     { id: "fridge",       label: "Refrigerator interior",                  price: 45,  perUnit: false },
     { id: "cabinets",     label: "Inside cabinets (kitchen)",              price: 135, perUnit: false },
     { id: "baseboards",   label: "Baseboards (whole house)",               price: 80,  perUnit: false },
-    { id: "wallWashing",  label: "Wall washing",                           price: 45,  perUnit: true,  unitLabel: "room" },
-    { id: "windows",      label: "Window washing",                         price: 10,  perUnit: true,  unitLabel: "window" },
+    { id: "wallWashing",  label: "Wall washing",                           price: 45,  perUnit: true,  unitLabel: "room",   note: "Spot cleaning is included." },
+    { id: "windows",      label: "Window washing",                         price: 10,  perUnit: true,  unitLabel: "window", note: "Interior windows are included in a Deep Clean (reachable only)." },
     { id: "linens",       label: "Linen change (strip + remake)",          price: 20,  perUnit: true,  unitLabel: "bed" },
     { id: "laundry",      label: "Laundry load",                           price: 25,  perUnit: true,  unitLabel: "load" },
     { id: "patio",        label: "Patio / deck sweep",                     price: 25,  perUnit: false },
@@ -987,12 +999,14 @@ function renderAddOns() {
     const qtyHtml = a.perUnit
       ? `<span class="qty-wrap" data-addon-qty="${a.id}" style="display:none;">Qty <input type="text" inputmode="numeric" value="1" data-qty-input="${a.id}"></span>`
       : "";
+    const noteHtml = a.note ? `<div class="addon-note">${escapeHtml(a.note)}</div>` : "";
     return `
       <div class="addon-row" data-addon="${a.id}">
         <div class="top">
           <span class="name">${escapeHtml(a.label)}</span>
           <span class="price">${priceLabel}</span>
         </div>
+        ${noteHtml}
         <div class="controls">
           <span class="seg" data-seg="${a.id}">
             <label data-state="OFF" class="active">
