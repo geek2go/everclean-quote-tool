@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EverClean Quote">
+  <rect width="512" height="512" rx="92" fill="#00559C"/>
+  <text x="256" y="328" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="220" font-weight="700" fill="#FFFFFF" text-anchor="middle">EC</text>
+  <path d="M408 96 L416 122 L442 130 L416 138 L408 164 L400 138 L374 130 L400 122 Z" fill="#FFFFFF" opacity="0.85"/>
+</svg>

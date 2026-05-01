@@ -3,10 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#00559C">
+<meta name="description" content="Internal quote tool for EverClean Lakes Area">
 <title>EverClean Quote Tool</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EC Quote">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500;700&display=swap">
+
+<!-- EmailJS browser SDK (quote archive — issue #7) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   /* =====================================================================
      TOKENS — EverClean brand colors + fonts (CLAUDE.md), Apple patterns (DESIGN.md)
@@ -883,6 +901,16 @@
 // CONFIG — edit values here when rates change. No code touch needed.
 // =========================================================================
 const CONFIG = {
+  // --- EmailJS quote archive (issue #7) ---------------------------------
+  // Every Generate Quote sends a copy of the form snapshot + total to
+  // info@evercleanlakesarea.com via EmailJS. Free tier: 200/month.
+  // Set keys to "" to disable.
+  emailJs: {
+    publicKey:  "SGiSfKn0DnUjwxwMv",
+    serviceId:  "service_h6o4l4w",
+    templateId: "template_6q12qiq"
+  },
+
   // --- Google Places API key ---------------------------------------------
   // Leave "" to disable autocomplete (form still works as plain text).
   // Setup: Google Cloud Console → enable Places API + Maps JavaScript API
@@ -1192,14 +1220,12 @@ function generateQuote(d) {
     flooredToMin = true;
   }
 
-  return {
-    type: "quote",
-    text: renderQuote(d, {
-      baseRate, addOnsCharged, addOnsIncludedValue,
-      chargedItems, includedItems,
-      rushPct, rushAmount, discount, total, flooredToMin
-    })
+  const calc = {
+    baseRate, addOnsCharged, addOnsIncludedValue,
+    chargedItems, includedItems,
+    rushPct, rushAmount, discount, total, flooredToMin
   };
+  return { type: "quote", text: renderQuote(d, calc), calc };
 }
 
 // =========================================================================
@@ -1380,6 +1406,109 @@ function initAutocomplete() {
 }
 
 // =========================================================================
+// EMAILJS QUOTE ARCHIVE (issue #7)
+// =========================================================================
+function formatDateLong(d) {
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const m = months[d.getMonth()];
+  const day = d.getDate();
+  const yr = d.getFullYear();
+  let h = d.getHours();
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12; if (h === 0) h = 12;
+  return `${m} ${day}, ${yr} — ${h}:${min} ${ampm}`;
+}
+
+function ynLabel(v) {
+  if (v === "Y") return "Yes";
+  if (v === "N") return "No";
+  if (v === "N/A") return "N/A";
+  return "(not provided)";
+}
+
+function formatAddonsSummary(d) {
+  const lines = [];
+  for (const sel of d.addOns) {
+    if (sel.state === "OFF") continue;
+    const cfg = CONFIG.addOns.find(a => a.id === sel.id);
+    if (!cfg) continue;
+    const qty = cfg.perUnit ? (sel.qty || 0) : 1;
+    if (qty <= 0) continue;
+    const lineTotal = cfg.price * qty;
+    let line = `  • ${cfg.label} — ${sel.state}`;
+    if (cfg.perUnit) line += ` — qty ${qty}`;
+    if (sel.state === "INCLUDE") {
+      line += cfg.perUnit
+        ? ` (${fmt$(lineTotal)} value)`
+        : ` (${fmt$(lineTotal)} value)`;
+    } else { // CHARGE
+      line += cfg.perUnit
+        ? ` — ${fmt$(lineTotal)}`
+        : ` — ${fmt$(lineTotal)}`;
+    }
+    lines.push(line);
+  }
+  return lines.length === 0 ? "  (none)" : lines.join("\n");
+}
+
+function buildEmailParams(d, result) {
+  const isQuote = result.type === "quote";
+  const isResort = d.propertyType === "Resort/Multi-cabin";
+  const totalStr = isQuote ? fmt$(result.calc.total) : "(site walk — no quote)";
+  const resortDetails = isResort
+    ? `${d.resortBuildings || "?"} buildings, ${d.resortCabins || "?"} cabins`
+    : "(N/A)";
+  const homeSizeLabel = (CONFIG.homeSizes.find(s => s.id === d.homeSize) || {}).label || d.homeSize;
+
+  // For non-residential, residential-only fields are contextually N/A
+  const isRes = d.propertyType === "Residential";
+
+  return {
+    date_generated:             formatDateLong(new Date()),
+    customer_name:              d.name    || "(not provided)",
+    customer_phone:             d.phone   || "(not provided)",
+    customer_email:             d.email   || "(not provided)",
+    customer_address:           d.address || "(not provided)",
+    total:                      totalStr,
+    service_type:               d.serviceType || "(N/A)",
+    frequency:                  isRes ? (d.frequency || "(N/A)") : "(N/A)",
+    property_type:              d.propertyType,
+    home_size:                  isRes ? (homeSizeLabel || "(N/A)") : "(N/A)",
+    beds:                       d.beds || "—",
+    baths:                      d.baths || "—",
+    sqft:                       d.sqft || "—",
+    resort_details:             resortDetails,
+    scheduling:                 d.scheduling || "(N/A)",
+    linens_provided:            ynLabel(d.linensProvided),
+    towels_fresh:               ynLabel(d.towelsFresh),
+    wd_onsite:                  ynLabel(d.washerDryer),
+    pets:                       ynLabel(d.pets),
+    last_pro_clean:             d.lastClean || "(N/A)",
+    hazardous:                  ynLabel(d.hazardousConditions),
+    addons_summary:             formatAddonsSummary(d),
+    first_time_discount:        fmt$(d.firstTimeDiscount || 0),
+    first_time_discount_reason: d.firstTimeDiscountReason || "(none)",
+    notes:                      d.notes || "(none)",
+    site_walk_override:         d.manualSiteWalkOverride ? "Yes" : "No",
+    quote_text:                 result.text || ""
+  };
+}
+
+function sendQuoteEmail(d, result) {
+  if (!window.emailjs || !CONFIG.emailJs || !CONFIG.emailJs.publicKey) return;
+  try {
+    const params = buildEmailParams(d, result);
+    emailjs.send(CONFIG.emailJs.serviceId, CONFIG.emailJs.templateId, params).then(
+      () => console.log("Quote archived via EmailJS."),
+      (err) => console.warn("EmailJS send failed:", err)
+    );
+  } catch (e) {
+    console.warn("EmailJS error:", e);
+  }
+}
+
+// =========================================================================
 // EVENT HANDLERS
 // =========================================================================
 function handleGenerate() {
@@ -1400,6 +1529,9 @@ function handleGenerate() {
   document.getElementById('output').value = result.text;
   document.getElementById('copyStatus').textContent = "";
   document.getElementById('output').scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // Fire-and-forget archive copy (issue #7)
+  sendQuoteEmail(d, result);
 }
 
 function handleCopy() {
@@ -1464,6 +1596,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnReset').addEventListener('click', handleReset);
 
   loadGoogleMaps();
+
+  // EmailJS init (issue #7)
+  if (window.emailjs && CONFIG.emailJs && CONFIG.emailJs.publicKey) {
+    try {
+      emailjs.init({ publicKey: CONFIG.emailJs.publicKey });
+    } catch (e) {
+      console.warn("EmailJS init failed:", e);
+    }
+  }
 });
 </script>
 
