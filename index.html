@@ -650,7 +650,7 @@
 <section class="field-group residential-only" id="sec-service">
   <h2>3. Service type</h2>
   <div class="body">
-    <p class="coach">Try asking: "Are you looking for a regular maintenance clean, a one-time deep clean, a move-in or move-out, or a vacation rental turnover?"</p>
+    <p class="coach">Try asking: "Are you looking for a regular maintenance clean, a one-time deep clean, a move-in or move-out, or a vacation rental turnover?" — <strong>If Move-In/Out:</strong> mention "we'll need cabinets, pantry, and medicine cabinet emptied before we come, and major appliances accessible." <strong>If STR Turnover:</strong> mention "we use your backup linens — you'll want to keep 2 full sets per bed and 2 towel sets per bath on-site."</p>
     <fieldset class="radio-set">
       <div class="radio-list">
         <label class="radio-item"><input type="radio" name="serviceType" value="Standard Clean" checked> Standard Clean</label>
@@ -954,8 +954,8 @@ const CONFIG = {
     { id: "fridge",       label: "Refrigerator interior",                  price: 45,  perUnit: false },
     { id: "cabinets",     label: "Inside cabinets (kitchen)",              price: 135, perUnit: false },
     { id: "baseboards",   label: "Baseboards (whole house)",               price: 80,  perUnit: false },
-    { id: "wallWashing",  label: "Wall washing",                           price: 45,  perUnit: true,  unitLabel: "room",   note: "Spot cleaning is included." },
-    { id: "windows",      label: "Window washing",                         price: 10,  perUnit: true,  unitLabel: "window", note: "Interior windows are included in a Deep Clean (reachable only)." },
+    { id: "wallWashing",  label: "Wall washing",                           price: 45,  perUnit: true,  unitLabel: "room",   note: "Wall spot cleaning is included. Full walls are an additional up-charge." },
+    { id: "windows",      label: "Window washing",                         price: 10,  perUnit: true,  unitLabel: "window", note: "Interior windows are included with Deep Clean. Spot cleaning on recurring cleans only." },
     { id: "linens",       label: "Linen change (strip + remake)",          price: 20,  perUnit: true,  unitLabel: "bed" },
     { id: "laundry",      label: "Laundry load",                           price: 25,  perUnit: true,  unitLabel: "load" },
     { id: "patio",        label: "Patio / deck sweep",                     price: 25,  perUnit: false },
@@ -965,11 +965,27 @@ const CONFIG = {
   ],
 
   scopeSummaries: {
-    "Standard Clean":      "Kitchen, bathrooms, bedrooms, common areas — full surface clean, vacuum, mop. Eco/green supplies included.",
-    "Deep Clean":          "Full Standard Clean PLUS baseboards, wall spot-cleaning, inside cabinets/appliance detail, grout spot-check. Eco/green supplies included.",
-    "Move-In Prep":        "Top-to-bottom whole-home prep — appliance interiors, cabinets, surfaces, floors. Move-in ready. Eco/green supplies included.",
-    "Move-Out Deep Clean": "Full empty-home clean — appliance interiors, cabinets, walls, floors. Ready for new tenants. Eco/green supplies included.",
-    "STR Turnover":        "Guest-ready turnover — kitchen, bathrooms, bedrooms with linen change, restock visible supplies, condition photo report. Eco/green supplies included."
+    "Standard Clean":      "Kitchen, bathrooms, bedrooms, common areas — surfaces dusted/wiped, microwave interior, appliance exteriors, baseboards dusted, floors vacuumed/mopped/edged. Eco/green supplies included.",
+    "Deep Clean":          "Full top-to-bottom reset. Kitchen incl. cabinet fronts, microwave interior, range hood, appliance exteriors. Bathrooms incl. grout, glass doors, fixture descaling, exhaust fans. Bedrooms & living incl. baseboards hand-wiped, ceiling fans, blinds, light fixtures, interior reachable windows, vents. Eco/green supplies included.",
+    "Move-In Prep":        "Full vacant-home clean — every surface, cabinet interiors and pantry shelves, under/behind appliances, walls hand-wiped, closet interiors, sliding doors incl. exterior + track. Eco/green supplies included.",
+    "Move-Out Deep Clean": "Full vacant-home clean — every surface, cabinet interiors and pantry shelves, under/behind appliances, walls hand-wiped, closet interiors, sliding doors incl. exterior + track. Eco/green supplies included.",
+    "STR Turnover":        "Guest-ready turnover — full kitchen + bathroom sanitization, microwave interior, all surfaces dusted/wiped, floors throughout, sliding doors. Strip + remake beds with owner's backup linens, replace towels with owner-supplied fresh set, restock owner-supplied toiletries, final visual check. Eco/green supplies included."
+  },
+
+  prepRequirements: {
+    "Move-In Prep": [
+      "Cabinets, pantry, and medicine cabinet emptied before we arrive",
+      "Major appliances pulled out (or accessible) for cleaning behind/under"
+    ],
+    "Move-Out Deep Clean": [
+      "Cabinets, pantry, and medicine cabinet emptied before we arrive",
+      "Major appliances pulled out (or accessible) for cleaning behind/under"
+    ],
+    "STR Turnover": [
+      "Minimum 2 full linen sets per bed kept on-site",
+      "Minimum 2 towel sets per bath kept on-site",
+      "Toiletries and consumables for restocking provided by owner"
+    ]
   },
 
   business: {
@@ -1238,6 +1254,15 @@ function renderQuote(d, calc) {
   lines.push("Includes:");
   lines.push(`  • ${CONFIG.scopeSummaries[d.serviceType] || ""}`);
   lines.push(`  • Same 2-person team every visit (whenever scheduling allows)`);
+
+  const prep = CONFIG.prepRequirements && CONFIG.prepRequirements[d.serviceType];
+  if (prep && prep.length > 0) {
+    lines.push("");
+    lines.push("What you'll need to have ready:");
+    for (const req of prep) {
+      lines.push(`  • ${req}`);
+    }
+  }
 
   if (calc.includedItems.length > 0) {
     lines.push("");
