@@ -1452,17 +1452,24 @@ function formatAddonsSummary(d) {
   return lines.length === 0 ? "  (none)" : lines.join("\n");
 }
 
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return "0";
+  return Math.round(n).toLocaleString("en-US");
+}
+
 function buildEmailParams(d, result) {
   const isQuote = result.type === "quote";
   const isResort = d.propertyType === "Resort/Multi-cabin";
-  const totalStr = isQuote ? fmt$(result.calc.total) : "(site walk — no quote)";
+  const isRes = d.propertyType === "Residential";
+  const calc = isQuote ? result.calc : null;
+
+  // All dollar values sent as raw numbers (no $) — template's `${{...}}`
+  // pattern provides the $ prefix.
+  const totalStr = isQuote ? fmtNum(calc.total) : "(site walk — no quote)";
   const resortDetails = isResort
     ? `${d.resortBuildings || "?"} buildings, ${d.resortCabins || "?"} cabins`
     : "(N/A)";
   const homeSizeLabel = (CONFIG.homeSizes.find(s => s.id === d.homeSize) || {}).label || d.homeSize;
-
-  // For non-residential, residential-only fields are contextually N/A
-  const isRes = d.propertyType === "Residential";
 
   return {
     date_generated:             formatDateLong(new Date()),
@@ -1487,7 +1494,11 @@ function buildEmailParams(d, result) {
     last_pro_clean:             d.lastClean || "(N/A)",
     hazardous:                  ynLabel(d.hazardousConditions),
     addons_summary:             formatAddonsSummary(d),
-    first_time_discount:        fmt$(d.firstTimeDiscount || 0),
+    base_rate:                  calc ? fmtNum(calc.baseRate) : "(N/A)",
+    add_ons_charged:            calc ? fmtNum(calc.addOnsCharged) : "(N/A)",
+    add_ons_included_value:     calc ? fmtNum(calc.addOnsIncludedValue) : "(N/A)",
+    rush_surcharge:             calc ? fmtNum(calc.rushAmount) : "(N/A)",
+    first_time_discount:        fmtNum(d.firstTimeDiscount || 0),
     first_time_discount_reason: d.firstTimeDiscountReason || "(none)",
     notes:                      d.notes || "(none)",
     site_walk_override:         d.manualSiteWalkOverride ? "Yes" : "No",
