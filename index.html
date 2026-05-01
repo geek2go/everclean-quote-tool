@@ -1497,18 +1497,13 @@ function buildEmailParams(d, result) {
     base_rate:                  calc ? fmtNum(calc.baseRate) : "(N/A)",
     addons_charged:             calc ? fmtNum(calc.addOnsCharged) : "(N/A)",
     addons_included_value:      calc ? fmtNum(calc.addOnsIncludedValue) : "(N/A)",
-    rush_surcharge:             calc ? fmtNum(calc.rushAmount) : "(N/A)",
     rush_amount:                calc ? fmtNum(calc.rushAmount) : "(N/A)",
     first_time_discount:        fmtNum(d.firstTimeDiscount || 0),
     first_time_discount_reason: d.firstTimeDiscountReason || "(none)",
     notes:                      d.notes || "(none)",
     site_walk_override:         d.manualSiteWalkOverride ? "Yes" : "No",
-    // Full customer-facing quote text — sent under several plausible
-    // template variable names since the spec didn't list this one.
-    quote_text:                  result.text || "",
-    customer_facing_quote_text:  result.text || "",
-    customer_quote_text:         result.text || "",
-    quote_body:                  result.text || ""
+    floored_to_min:             calc ? (calc.flooredToMin ? "Yes" : "No") : "(N/A)",
+    customer_facing_text:       result.text || ""
   };
 }
 
