@@ -1503,7 +1503,12 @@ function buildEmailParams(d, result) {
     first_time_discount_reason: d.firstTimeDiscountReason || "(none)",
     notes:                      d.notes || "(none)",
     site_walk_override:         d.manualSiteWalkOverride ? "Yes" : "No",
-    quote_text:                 result.text || ""
+    // Full customer-facing quote text — sent under several plausible
+    // template variable names since the spec didn't list this one.
+    quote_text:                  result.text || "",
+    customer_facing_quote_text:  result.text || "",
+    customer_quote_text:         result.text || "",
+    quote_body:                  result.text || ""
   };
 }
 
